@@ -1,13 +1,14 @@
 package com.codename1.components;
 
-import com.codename1.ui.*;
+import com.codename1.ui.Button;
+import com.codename1.ui.Container;
+import com.codename1.ui.FontImage;
+import com.codename1.ui.Image;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
-
-import java.util.List;
 
 public class MultiSplitPane extends Container{
 
@@ -21,14 +22,6 @@ public class MultiSplitPane extends Container{
 
     public final void setModel(MultiSplitLayout.Node model) {
         ((MultiSplitLayout)getLayout()).setModel(model);
-
-        //TODO rewrite function dividers problem
-        List<Component> dividerList = ((MultiSplitLayout)getLayout()).getDividerList();
-        for(Component currDivider : dividerList){
-            if (!this.contains(currDivider)){
-                add(currDivider);
-            }
-        }
     }
 
     public static class Divider extends Container {
@@ -92,9 +85,12 @@ public class MultiSplitPane extends Container{
             }
         }
 
-        //TODO see how to make not public
         public void setParentNode(MultiSplitLayout.Split parentNode){
             this.parentNode = parentNode;
+        }
+
+        public MultiSplitLayout.Split getParentNode(){
+            return parentNode;
         }
 
         public void setCollapseIcon(Image collapseImage){
@@ -110,14 +106,13 @@ public class MultiSplitPane extends Container{
         }
 
         private void updateParentWeight(final int x, final int y){
-            //TODO write a function to see if the drag is in valid parent bounds.
-//            if (!isInParentBounds){
-//                return;
-//            }
             Rectangle parentLimits = parentNode.getBounds();
-            //TODO make animation better.
+            //TODO fix animation.
             if(isHorizontal){
-                int parentHeight = parentLimits.getHeight();
+                if (!inParentBounds(y)){
+                    return;
+                }
+                int parentHeight = parentLimits.getHeight() - this.getHeight();
                 double draggedWeight = ((double)y - (double)lastY) / parentHeight;
                 double newWeight = parentNode.getWeight() + draggedWeight;
                 if (newWeight > 1.0){
@@ -128,7 +123,10 @@ public class MultiSplitPane extends Container{
                     parentNode.setWeight(newWeight);
                 }
             }else{
-                int parentWidth = parentLimits.getWidth();
+                if (!inParentBounds(x)){
+                    return;
+                }
+                int parentWidth = parentLimits.getWidth() - this.getWidth();
                 double draggedWeight = ((double)x - (double)lastX) / parentWidth;
                 double newWeight = parentNode.getWeight() + draggedWeight;
                 if (newWeight > 1.0){
@@ -141,6 +139,24 @@ public class MultiSplitPane extends Container{
             }
             lastX = x;
             lastY = y;
+        }
+
+        private boolean inParentBounds(final int coordinate){
+            Rectangle parentNodeBounds = parentNode.getBounds();
+            if (isHorizontal){
+                int minY = getParent().getAbsoluteY();
+                int maxY = getParent().getAbsoluteY() + parentNodeBounds.getHeight();
+                if (coordinate >= minY && coordinate <= maxY){
+                    return true;
+                }
+            }else{
+                int minX = getParent().getAbsoluteX();
+                int maxX = getParent().getAbsoluteX() + parentNodeBounds.getWidth();
+                if(coordinate >= minX && coordinate <= maxX){
+                    return true;
+                }
+            }
+            return false;
         }
 
         private Image getDefaultCollapseIcon(boolean isHorizontal) {
@@ -206,12 +222,6 @@ public class MultiSplitPane extends Container{
         @Override
         public void pointerReleased(int x, int y) {
             super.pointerReleased(x, y);
-            inDrag = false;
-        }
-
-        @Override
-        protected void dragFinished(int x, int y) {
-            super.dragFinished(x, y);
             inDrag = false;
         }
     }
