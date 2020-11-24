@@ -52,19 +52,25 @@ public class MultiSplitPane extends Container{
 
             this.getAllStyles().setBorder(createBorder());
 
+
             btnCollapse = new Button();
             btnCollapse.setUIID(collapseButtonUIID);
             btnCollapse.setIcon(getDefaultCollapseIcon(isHorizontal));
             btnCollapse.getAllStyles().setPadding(0,0,0,0);
             btnCollapse.getAllStyles().setMargin(0,0,0,0);
             btnCollapse.addActionListener(e ->{
-                double newWeight;
-                if(parentNode.getWeight() <= 0.5){
-                    newWeight = 0;
+                double newRatio;
+                if(parentNode.getRatio() <= 0.5){
+                    newRatio = parentNode.getMinRatio();
                 }else{
-                    newWeight = 0.5 ;
+                    if(parentNode.getMinRatio() <= 0.5){
+                        newRatio = 0.5 ;
+                    }else{
+                        newRatio = parentNode.getMinRatio();
+                    }
+
                 }
-                moveDivider(parentNode.getWeight(), newWeight, 200);
+                moveDivider(parentNode.getRatio(), newRatio, 200);
             });
 
             btnExpand = new Button();
@@ -73,13 +79,17 @@ public class MultiSplitPane extends Container{
             btnExpand.getAllStyles().setMargin(0,0,0,0);
             btnExpand.setIcon(getDefaultExpandIcon(isHorizontal));
             btnExpand.addActionListener(e ->{
-                double newWeight;
-                if(parentNode.getWeight() < 0.5){
-                    newWeight = 0.5;
+                double newRatio;
+                if(parentNode.getRatio() < 0.5){
+                    if (parentNode.getMaxRatio() <= 0.5){
+                        newRatio = parentNode.getMaxRatio();
+                    }else{
+                        newRatio = 0.5;
+                    }
                 }else{
-                    newWeight = 1.0;
+                    newRatio = parentNode.getMaxRatio();
                 }
-                moveDivider(parentNode.getWeight(), newWeight, 200);
+                moveDivider(parentNode.getRatio(), newRatio, 200);
             });
 
             dragLabel = new Label();
@@ -142,40 +152,41 @@ public class MultiSplitPane extends Container{
         }
 
         //TODO see if can find more convenient way to fix the animation or remove the animation and make the transition instant.
-        private void moveDivider(double oldWeight, double newWeight, long millis){
+        private void moveDivider(double oldRatio, double newRatio, long millis){
             final double animationStep = 0.005;
             EasyThread.start("").run(()->{
-                if(oldWeight > newWeight){
-                    int sleepTime = (int)((double)millis / ((oldWeight - newWeight) / animationStep));
+                if(oldRatio > newRatio){
+                    int sleepTime = (int)((double)millis / ((oldRatio - newRatio) / animationStep));
                     if (sleepTime == 0){
                         sleepTime = 1;
                     }
-                    for (double weight = oldWeight; weight > newWeight; weight -= animationStep){
-                        try{
-                            sleep(sleepTime);
-                        }catch (InterruptedException exception){
-                        }
-                        parentNode.setWeight(weight);
-                        CN.callSerially(()->{
-                            revalidate();
-                        });
-                    }
-                    parentNode.setWeight(newWeight);
-                }else if (oldWeight < newWeight){
-                    int sleepTime = (int)((double)millis / ((newWeight - oldWeight) / animationStep));
-                    if (sleepTime == 0){
-                        sleepTime = 1;
-                    }
-                    for (double weight = oldWeight; weight < newWeight; weight += animationStep){
+                    for (double ratio = oldRatio; ratio > newRatio; ratio -= animationStep){
                         try{
                             sleep(sleepTime);
                         }catch (InterruptedException exception){
 
                         }
-                        parentNode.setWeight(weight);
+                        parentNode.setRatio(ratio);
+                        CN.callSerially(()->{
+                            revalidate();
+                        });
+                    }
+                    parentNode.setRatio(newRatio);
+                }else if (oldRatio < newRatio){
+                    int sleepTime = (int)((double)millis / ((newRatio - oldRatio) / animationStep));
+                    if (sleepTime == 0){
+                        sleepTime = 1;
+                    }
+                    for (double ratio = oldRatio; ratio < newRatio; ratio += animationStep){
+                        try{
+                            sleep(sleepTime);
+                        }catch (InterruptedException exception){
+
+                        }
+                        parentNode.setRatio(ratio);
                         CN.callSerially(()-> revalidate());
                     }
-                    parentNode.setWeight(newWeight);
+                    parentNode.setRatio(newRatio);
                 }
             });
         }
@@ -199,36 +210,35 @@ public class MultiSplitPane extends Container{
             return parentNode;
         }
 
-        private void updateParentWeight(final int x, final int y){
+        private void updateParentRatio(final int x, final int y){
             Rectangle parentLimits = parentNode.getBounds();
-            //TODO fix animation.
             if(isHorizontal){
                 if (!inParentBounds(y)){
                     return;
                 }
                 int parentHeight = parentLimits.getHeight() - this.getHeight();
-                double draggedWeight = ((double)y - (double)lastY) / parentHeight;
-                double newWeight = parentNode.getWeight() + draggedWeight;
-                if (newWeight > 1.0){
-                    parentNode.setWeight(1.0);
-                }else if (newWeight < 0){
-                    parentNode.setWeight(0);
+                double draggedRatio = ((double)y - (double)lastY) / parentHeight;
+                double newRatio = parentNode.getRatio() + draggedRatio;
+                if (newRatio > getParentNode().maxRatio){
+                    parentNode.setRatio(parentNode.getMaxRatio());
+                }else if (newRatio < parentNode.getMinRatio()){
+                    parentNode.setRatio(parentNode.getMinRatio());
                 }else{
-                    parentNode.setWeight(newWeight);
+                    parentNode.setRatio(newRatio);
                 }
             }else{
                 if (!inParentBounds(x)){
                     return;
                 }
                 int parentWidth = parentLimits.getWidth() - this.getWidth();
-                double draggedWeight = ((double)x - (double)lastX) / parentWidth;
-                double newWeight = parentNode.getWeight() + draggedWeight;
-                if (newWeight > 1.0){
-                    parentNode.setWeight(1.0);
-                }else if (newWeight < 0){
-                    parentNode.setWeight(0);
+                double draggedRatio = ((double)x - (double)lastX) / parentWidth;
+                double newRatio = parentNode.getRatio() + draggedRatio;
+                if (newRatio > 1.0){
+                    parentNode.setRatio(1.0);
+                }else if (newRatio < 0){
+                    parentNode.setRatio(0);
                 }else{
-                    parentNode.setWeight(newWeight);
+                    parentNode.setRatio(newRatio);
                 }
             }
             lastX = x;
@@ -295,7 +305,7 @@ public class MultiSplitPane extends Container{
             if (!inDrag) {
                 return;
             }
-            updateParentWeight(x, y);
+            updateParentRatio(x, y);
             this.revalidate();
         }
 
@@ -428,7 +438,7 @@ public class MultiSplitPane extends Container{
                     int x= bounds.getX();
                     Dimension totalChildrenSize = new Dimension(bounds.getWidth(), bounds.getHeight() - preferredNodeSize(divider).getHeight());
 
-                    Dimension topChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * split.getWeight()));
+                    Dimension topChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * split.getRatio()));
                     topChild.setBounds(new Rectangle(x, y, topChildDim));
                     //TODO see how can be written better.
                     if(((Divider)childForNode(divider)).getParentNode() != root){
@@ -439,7 +449,7 @@ public class MultiSplitPane extends Container{
                     divider.setBounds(new Rectangle(x, y, new Dimension(bounds.getWidth(), preferredNodeSize(divider).getHeight())));
                     y += preferredNodeSize(divider).getHeight();
 
-                    Dimension bottomChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * (1 - split.getWeight())));
+                    Dimension bottomChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * (1 - split.getRatio())));
                     bottomChild.setBounds(new Rectangle(bounds.getX(), y, bottomChildDim));
 
                     layout(topChild, topChild.getBounds());
@@ -453,7 +463,7 @@ public class MultiSplitPane extends Container{
                     int y = bounds.getY();
                     Dimension totalChildrenSize = new Dimension(bounds.getWidth() - preferredNodeSize(divider).getWidth(), bounds.getHeight());
 
-                    Dimension leftChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * split.getWeight())), totalChildrenSize.getHeight());
+                    Dimension leftChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * split.getRatio())), totalChildrenSize.getHeight());
                     leftChild.setBounds(new Rectangle(x, y, leftChildDim));
                     x += leftChildDim.getWidth();
 
@@ -464,7 +474,7 @@ public class MultiSplitPane extends Container{
                     }
                     x += divider.getBounds().getWidth();
 
-                    Dimension bottomChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * (1 - split.getWeight()))), totalChildrenSize.getHeight());
+                    Dimension bottomChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * (1 - split.getRatio()))), totalChildrenSize.getHeight());
                     rightChild.setBounds(new Rectangle(x, y, bottomChildDim));
 
                     layout(leftChild, leftChild.getBounds());
@@ -535,7 +545,9 @@ public class MultiSplitPane extends Container{
         private final Node leftTop;
         private final Node rightBottom;
         private boolean isHorizontal;
-        private double weight = 0.5;
+        private double ratio = 0.5;
+        private double minRatio = 0;
+        private double maxRatio = 1;
 
 
         public Split(boolean isHorizontal, Node leftTop, Node rightBottom, DividerNode dividerNode) {
@@ -546,15 +558,43 @@ public class MultiSplitPane extends Container{
             this.dividerNode = dividerNode;
         }
 
-        public double getWeight() {
-            return weight;
+        public void setMinRatio(double minRatio){
+            if ( ((minRatio < 0.0) || (minRatio > maxRatio))){
+                throw new IllegalArgumentException("invalid Ratio");
+            }
+            if (ratio < minRatio) {
+                ratio = minRatio;
+            }
+            this.minRatio = minRatio;
         }
 
-        public void setWeight(double weight) {
-            if ((weight < 0.0) || (weight > 1.0)) {
-                throw new IllegalArgumentException("invalid weight");
+        public double getMinRatio(){
+            return minRatio;
+        }
+
+        public void setMaxRatio(double maxRatio){
+            if ( ((maxRatio < minRatio) || (maxRatio > 1.0))){
+                throw new IllegalArgumentException("invalid ratio");
             }
-            this.weight = weight;
+            if (ratio > maxRatio) {
+                ratio = maxRatio;
+            }
+            this.maxRatio = maxRatio;
+        }
+
+        public double getMaxRatio(){
+            return maxRatio;
+        }
+
+        public double getRatio() {
+            return ratio;
+        }
+
+        public void setRatio(double ratio) {
+            if ((ratio < minRatio) || (ratio > maxRatio)) {
+                throw new IllegalArgumentException("invalid ratio");
+            }
+            this.ratio = ratio;
         }
 
         public boolean isHorizontal() {

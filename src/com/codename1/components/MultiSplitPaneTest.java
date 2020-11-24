@@ -123,6 +123,7 @@ public class MultiSplitPaneTest {
 
         MultiSplitPane multi = new MultiSplitPane();
 
+
         multi.addAll(c1, c2, div1);
         multi.getMultiSplitLayout().addLayoutComponent("1", c1);
         multi.getMultiSplitLayout().addLayoutComponent("2", c2);
@@ -252,6 +253,10 @@ public class MultiSplitPaneTest {
 
         MultiSplitPane.Split split1 = new MultiSplitPane.Split(true, leaf1, leaf2, divNode1);
         MultiSplitPane.Split split2 = new MultiSplitPane.Split(false, split1, leaf3, divNode2);
+        split1.setMaxRatio(0.7);
+        split1.setMinRatio(0.3);
+
+
 
         multi.setModel(split2);
         hi.add(BorderLayout.CENTER, multi);
