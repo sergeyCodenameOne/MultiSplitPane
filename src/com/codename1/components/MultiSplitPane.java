@@ -11,22 +11,37 @@ import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.util.EasyThread;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static java.lang.Thread.sleep;
 
 public class MultiSplitPane extends Container{
+
 
     public MultiSplitPane() {
         super(new MultiSplitLayout());
     }
 
-    public final void setModel(Node model) {
-        ((MultiSplitLayout)getLayout()).setModel(model);
+    public MultiSplitPane(Node model){
+        super(new MultiSplitLayout());
+        setModel(model);
     }
 
-    public final MultiSplitLayout getMultiSplitLayout() {
+    public void setModel(Node model) {
+        ((MultiSplitLayout)getLayout()).setModel(model);
+        removeAll();
+        addComponents(model);
+    }
+
+    private void addComponents(Node root){
+        if (root instanceof Leaf){
+            add(((Leaf)root).getChildComponent());
+        }else{
+            add(((Split)root).getDivider());
+            addComponents(((Split)root).getLeftTopChild());
+            addComponents(((Split)root).getRightBottomChild());
+        }
+    }
+
+    private MultiSplitLayout getMultiSplitLayout() {
         return (MultiSplitLayout)getLayout();
     }
 
@@ -41,12 +56,12 @@ public class MultiSplitPane extends Container{
         private final Label dragLabel;
         private Split parentNode = null;
 
-        private final String  expandButtonUIID = "Label";
+        private final String expandButtonUIID = "Label";
         private final String collapseButtonUIID = "Label";
         private final String dragHandleUIID = "Label";
 
 
-        public Divider(boolean isHorizontal) {
+        private Divider(boolean isHorizontal) {
             super(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER_ABSOLUTE));
             this.isHorizontal = isHorizontal;
 
@@ -128,7 +143,7 @@ public class MultiSplitPane extends Container{
             btnExpand.setIcon(collapseImage);
         }
 
-        public void setDragIcon(Image collapseImage) {
+        public void setDragLabelIcon(Image collapseImage) {
             dragLabel.setIcon(collapseImage);
         }
 
@@ -147,7 +162,7 @@ public class MultiSplitPane extends Container{
             }
         }
 
-        public boolean isShowDivider(){
+        public boolean isShow(){
             return showDivider;
         }
 
@@ -202,11 +217,11 @@ public class MultiSplitPane extends Container{
                                                                 Border.createBevelRaised());
         }
 
-        public void setParentNode(Split parentNode){
+        private void setParentNode(Split parentNode){
             this.parentNode = parentNode;
         }
 
-        public Split getParentNode(){
+        private Split getParentNode(){
             return parentNode;
         }
 
@@ -316,59 +331,20 @@ public class MultiSplitPane extends Container{
         }
     }
 
-    //TODO Not sure if should be separate class
-    public static class MultiSplitLayout extends Layout {
-        private final Map<String, Component> childMap = new HashMap<>();
-        private Node model;
-
-        private MultiSplitLayout() {
-            this(new Leaf("default"));
-        }
-
-        private MultiSplitLayout(Node model) {
-            this.model = model;
-        }
+    private static class MultiSplitLayout extends Layout {
+        private Node model = null;
 
         private Node getModel() {
             return model;
         }
 
         private void setModel(Node root) {
-            if (root instanceof DividerNode){
-                throw new IllegalArgumentException("divider cannot be root");
-            }
             this.model = root;
         }
 
-        public void addLayoutComponent(String name, Component child) {
-            if (name == null || child == null) {
-                throw new IllegalArgumentException("name not specified");
-            }
-            childMap.put(name, child);
-        }
 
-        public void removeLayoutComponent(Component child) {
-            if (child != null) {
-                String name = child.getName();
-                if (name != null) {
-                    childMap.remove(name);
-                }
-            }
-        }
-
-        private Component childForNode(Node node) {
-            if (node instanceof Leaf) {
-                String name = ( (Leaf)node ).getName();
-                return (name != null) ? childMap.get(name) : null;
-            }else if(node instanceof DividerNode){
-                String name = ( (DividerNode)node ).getName();
-                return (name != null) ? childMap.get(name) : null;
-            }
-            return null;
-        }
-
-        private Dimension preferredComponentSize(Node node) {
-            Component child = childForNode(node);
+        private Dimension preferredComponentSize(Leaf node) {
+            Component child = node.getChildComponent();
             return (child != null) ? child.getPreferredSize() : new Dimension(0, 0);
         }
 
@@ -383,7 +359,6 @@ public class MultiSplitPane extends Container{
 
         @Override
         public void layoutContainer(Container parent) {
-            checkLayout(getModel(), parent);
             Dimension size = new Dimension(parent.getWidth(), parent.getHeight());
             Style parentStyle = parent.getStyle();
             int paddingTop = parentStyle.getPaddingTop();
@@ -398,32 +373,10 @@ public class MultiSplitPane extends Container{
             layout(getModel(), bounds);
         }
 
-        private void checkLayout(Node root, Container parent){
-            if (root instanceof Leaf){
-                if (childForNode(root) == null){
-                    throwInvalidLayout("Node: \"" + ((Leaf) root).getName() + "\" doesn't match any component in the layout");
-                }
-                if (!parent.contains(childForNode(root))){
-                    throwInvalidLayout("Node: \"" + ((Leaf) root).getName() + "\" doesn't match any component in the container");
-                }
-            }else if(root instanceof DividerNode){
-                if (childForNode(root) == null){
-                    throwInvalidLayout("Node: \"" + ((DividerNode) root).getName() + "\" doesn't match any component in the layout");
-                }
-                if (!parent.contains(childForNode(root))){
-                    throwInvalidLayout("Node: \"" + ((DividerNode) root).getName() + "\" doesn't match any component in the container");
-                }
-            }else{
-                checkLayout(((Split)root).getLeftTopChild(), parent);
-                checkLayout(((Split)root).getDividerNode(), parent);
-                checkLayout(((Split)root).getRightBottomChild(), parent);
-            }
-        }
-
         private void layout(Node root, Rectangle bounds) {
-            if (root instanceof Leaf || root instanceof DividerNode) {
+            if (root instanceof Leaf) {
                 root.setBounds(bounds);
-                Component cmp = childForNode(root);
+                Component cmp = ((Leaf) root).getChildComponent();
                 cmp.setX(bounds.getX());
                 cmp.setY(bounds.getY());
                 cmp.setSize(bounds.getSize());
@@ -432,63 +385,55 @@ public class MultiSplitPane extends Container{
                 split.setBounds(bounds);
                 if (split.isHorizontal()) {
                     Node topChild = split.getLeftTopChild();
-                    Node divider = split.getDividerNode();
+                    Divider divider = split.getDivider();
                     Node bottomChild = split.getRightBottomChild();
                     int y = bounds.getY();
                     int x= bounds.getX();
-                    Dimension totalChildrenSize = new Dimension(bounds.getWidth(), bounds.getHeight() - preferredNodeSize(divider).getHeight());
+                    Dimension totalChildrenSize = new Dimension(bounds.getWidth(), bounds.getHeight() - divider.getPreferredH());
 
                     Dimension topChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * split.getRatio()));
                     topChild.setBounds(new Rectangle(x, y, topChildDim));
-                    //TODO see how can be written better.
-                    if(((Divider)childForNode(divider)).getParentNode() != root){
-                        ((Divider)childForNode(divider)).setParentNode((Split)root);
-                    }
                     y += topChildDim.getHeight();
 
-                    divider.setBounds(new Rectangle(x, y, new Dimension(bounds.getWidth(), preferredNodeSize(divider).getHeight())));
-                    y += preferredNodeSize(divider).getHeight();
+                    divider.setX(x);
+                    divider.setY(y);
+                    divider.setSize(new Dimension(bounds.getWidth(), divider.getPreferredH()));
+                    y += divider.getHeight();
 
                     Dimension bottomChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * (1 - split.getRatio())));
                     bottomChild.setBounds(new Rectangle(bounds.getX(), y, bottomChildDim));
 
                     layout(topChild, topChild.getBounds());
                     layout(bottomChild, bottomChild.getBounds());
-                    layout(divider, divider.getBounds());
                 } else {
                     Node leftChild = split.getLeftTopChild();
-                    Node divider = split.getDividerNode();
+                    Divider divider = split.getDivider();
                     Node rightChild = split.getRightBottomChild();
                     int x = bounds.getX();
                     int y = bounds.getY();
-                    Dimension totalChildrenSize = new Dimension(bounds.getWidth() - preferredNodeSize(divider).getWidth(), bounds.getHeight());
+                    Dimension totalChildrenSize = new Dimension(bounds.getWidth() - divider.getPreferredW(), bounds.getHeight());
 
                     Dimension leftChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * split.getRatio())), totalChildrenSize.getHeight());
                     leftChild.setBounds(new Rectangle(x, y, leftChildDim));
                     x += leftChildDim.getWidth();
 
-                    divider.setBounds(new Rectangle(x, y, new Dimension(preferredNodeSize(divider).getWidth(), bounds.getHeight())));
-                    //TODO see how can be written better.
-                    if(((MultiSplitPane.Divider)childForNode(divider)).getParentNode() != root){
-                        ((MultiSplitPane.Divider)childForNode(divider)).setParentNode((Split)root);
-                    }
-                    x += divider.getBounds().getWidth();
+                    divider.setX(x);
+                    divider.setY(y);
+                    divider.setSize(new Dimension(divider.getPreferredW(), bounds.getHeight()));
+                    x += divider.getWidth();
 
                     Dimension bottomChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * (1 - split.getRatio()))), totalChildrenSize.getHeight());
                     rightChild.setBounds(new Rectangle(x, y, bottomChildDim));
 
                     layout(leftChild, leftChild.getBounds());
                     layout(rightChild, rightChild.getBounds());
-                    layout(divider, divider.getBounds());
                 }
             }
         }
 
         private Dimension preferredNodeSize(Node root) {
             if (root instanceof Leaf) {
-                return preferredComponentSize(root);
-            }else if(root instanceof DividerNode){
-                return preferredComponentSize(root);
+                return preferredComponentSize((Leaf)root);
             } else {
                 Split split = (Split) root;
                 Node leftTop = ((Split) root).getLeftTopChild();
@@ -500,9 +445,9 @@ public class MultiSplitPane extends Container{
 
                 if (split.isHorizontal()) {
                     width = Math.max(topLeftSize.getWidth(), rightBottomSize.getWidth());
-                    height = topLeftSize.getHeight() + rightBottomSize.getHeight() + preferredNodeSize(((Split) root).getDividerNode()).getHeight();
+                    height = topLeftSize.getHeight() + rightBottomSize.getHeight() + ((Split) root).getDivider().getHeight();
                 } else {
-                    width = topLeftSize.getWidth() + rightBottomSize.getWidth() + preferredNodeSize(((Split) root).getDividerNode()).getWidth();
+                    width = topLeftSize.getWidth() + rightBottomSize.getWidth() + ((Split) root).getDivider().getWidth();
                     height = Math.max(topLeftSize.getHeight(), rightBottomSize.getHeight());
                 }
                 return new Dimension(width, height);
@@ -541,7 +486,7 @@ public class MultiSplitPane extends Container{
     }
 
     public static class Split extends Node {
-        private final DividerNode dividerNode;
+        private final Divider divider;
         private final Node leftTop;
         private final Node rightBottom;
         private boolean isHorizontal;
@@ -550,12 +495,13 @@ public class MultiSplitPane extends Container{
         private double maxRatio = 1;
 
 
-        public Split(boolean isHorizontal, Node leftTop, Node rightBottom, DividerNode dividerNode) {
+        public Split(boolean isHorizontal, Node leftTop, Node rightBottom) {
             this.isHorizontal = isHorizontal;
 
             this.leftTop = leftTop;
             this.rightBottom = rightBottom;
-            this.dividerNode = dividerNode;
+            divider = new Divider(isHorizontal);
+            divider.setParentNode(this);
         }
 
         public void setMinRatio(double minRatio){
@@ -613,52 +559,23 @@ public class MultiSplitPane extends Container{
             return rightBottom;
         }
 
-        public DividerNode getDividerNode() {
-            return dividerNode;
+        public Divider getDivider() {
+            return divider;
         }
     }
 
     public static class Leaf extends Node {
-        private String name;
+        private final Component child;
 
-        public Leaf(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("name is null");
+        public Leaf(Component child) {
+            if (child == null) {
+                throw new IllegalArgumentException("child of leaf cannot be null");
             }
-            this.name = name;
+            this.child = child;
         }
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("name is null");
-            }
-            this.name = name;
-        }
-    }
-
-    public static class DividerNode extends Node {
-        private String name;
-
-        public DividerNode(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("name is null");
-            }
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("name is null");
-            }
-            this.name = name;
+        public Component getChildComponent() {
+            return child;
         }
     }
 }
