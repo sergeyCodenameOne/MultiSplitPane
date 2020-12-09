@@ -15,6 +15,7 @@ import static com.codename1.ui.CN.*;
  * of building native mobile applications using Java.
  */
 public class MultiSplitPaneTest {
+    private boolean isShow = true;
 
     private Form current;
     private Resources theme;
@@ -283,19 +284,22 @@ public class MultiSplitPaneTest {
         Label l8 = new Label("demo label 8");
         Button l9 = new Button("demo button show");
 
-
         Container c1 = BoxLayout.encloseY(l1, l2, l3);
         Container c2 = BoxLayout.encloseY(l4, l5, l6);
         Container c3 = BoxLayout.encloseY(l7, l8, l9);
 
-        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf(c1);
-        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf(c2);
-        MultiSplitPane.Leaf leaf3 = new MultiSplitPane.Leaf(c3);
+        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(false);
+        MultiSplitPane.Divider div2 = new MultiSplitPane.Divider(true);
 
-        MultiSplitPane.Split split1 = new MultiSplitPane.Split(true, leaf1, leaf2);
-        MultiSplitPane.Split split2 = new MultiSplitPane.Split(false, split1, leaf3);
+        l9.addActionListener(e->{
+            div1.showDivider(isShow);
+            isShow = !isShow;
+        });
 
-        MultiSplitPane multi = new MultiSplitPane(split2);
+        MultiSplitPane multi = MultiSplitPane.split(c1, c2, div1).
+                split(c3, div2, true);
+
+//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, div1);
 
         multi.setUIID("DemoCnt");
         hi.add(BorderLayout.CENTER, multi);

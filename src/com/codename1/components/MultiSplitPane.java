@@ -9,40 +9,46 @@ import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.plaf.Border;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
-import com.codename1.util.EasyThread;
 
-import static java.lang.Thread.sleep;
+public class MultiSplitPane extends Container {
+    private final Split root;
 
-public class MultiSplitPane extends Container{
-
-
-    public MultiSplitPane() {
-        super(new MultiSplitLayout());
+    public static MultiSplitPane split(Component leftTop, Component rightBottom, Divider divider){
+        return MultiSplitPane.split(leftTop, rightBottom, divider, Split.DEFAULT_MIN_RATIO, Split.DEFAULT_MAX_RATIO, Split.DEFAULT_RATIO);
     }
 
-    public MultiSplitPane(Node model){
-        super(new MultiSplitLayout());
-        setModel(model);
+    public static MultiSplitPane split(Component leftTop, Component rightBottom, Divider divider, double minRatio, double maxRatio, double ratio){
+        Split split = new Split(leftTop, rightBottom, divider, minRatio, maxRatio, ratio);
+        split.setMaxRatio(maxRatio);
+        split.setMinRatio(minRatio);
+        return new MultiSplitPane(split);
     }
 
-    public void setModel(Node model) {
-        ((MultiSplitLayout)getLayout()).setModel(model);
-        removeAll();
-        addComponents(model);
+    public MultiSplitPane split(Component cmp, Divider divider, boolean isTopOrLeft){
+        return this.split(cmp, divider, isTopOrLeft, Split.DEFAULT_MIN_RATIO, Split.DEFAULT_MAX_RATIO, Split.DEFAULT_RATIO);
     }
 
-    private void addComponents(Node root){
-        if (root instanceof Leaf){
-            add(((Leaf)root).getChildComponent());
-        }else{
-            add(((Split)root).getDivider());
-            addComponents(((Split)root).getLeftTopChild());
-            addComponents(((Split)root).getRightBottomChild());
-        }
+    public MultiSplitPane split(Component cmp, Divider divider, boolean isTopOrLeft, double minRatio, double maxRatio, double ratio){
+        removeComponent(root);
+        Split root = isTopOrLeft ?  new Split(cmp, getRoot(), divider, minRatio, maxRatio, ratio) :
+                                    new Split(getRoot(), cmp, divider, minRatio, maxRatio, ratio);
+        setRoot(root);
+        return this;
     }
 
-    private MultiSplitLayout getMultiSplitLayout() {
-        return (MultiSplitLayout)getLayout();
+    private MultiSplitPane(Split root){
+        super(new BorderLayout());
+        this.root = root;
+        add(BorderLayout.CENTER, root);
+    }
+
+    private void setRoot(Split root){
+        add(BorderLayout.CENTER, root);
+
+    }
+
+    public final Split getRoot(){
+        return root;
     }
 
     public static class Divider extends Container {
@@ -50,65 +56,55 @@ public class MultiSplitPane extends Container{
         private int lastX, lastY;
         private boolean inDrag;
         private final boolean isHorizontal;
-
         private final Button btnCollapse;
         private final Button btnExpand;
         private final Label dragLabel;
-        private Split parentNode = null;
 
-        private final String expandButtonUIID = "Label";
-        private final String collapseButtonUIID = "Label";
-        private final String dragHandleUIID = "Label";
+        private static final String EXPAND_BUTTON_UIID = "Label";
+        private static final String COLLAPSE_BUTTON_UIID = "Label";
+        private static final String DRAG_HANDLE_UIID = "Label";
 
-
-        private Divider(boolean isHorizontal) {
+        public Divider(boolean isHorizontal) {
             super(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER_ABSOLUTE));
             this.isHorizontal = isHorizontal;
 
             this.getAllStyles().setBorder(createBorder());
 
-
             btnCollapse = new Button();
-            btnCollapse.setUIID(collapseButtonUIID);
+            btnCollapse.setUIID(COLLAPSE_BUTTON_UIID);
             btnCollapse.setIcon(getDefaultCollapseIcon(isHorizontal));
             btnCollapse.getAllStyles().setPadding(0,0,0,0);
             btnCollapse.getAllStyles().setMargin(0,0,0,0);
-            btnCollapse.addActionListener(e ->{
+            btnCollapse.addActionListener(e->{
                 double newRatio;
-                if(parentNode.getRatio() <= 0.5){
-                    newRatio = parentNode.getMinRatio();
+                if(((Split)getParent()).getRatio() <= 0.5){
+                    newRatio = ((Split)getParent()).getMinRatio();
                 }else{
-                    if(parentNode.getMinRatio() <= 0.5){
-                        newRatio = 0.5 ;
-                    }else{
-                        newRatio = parentNode.getMinRatio();
-                    }
+                    newRatio = Math.max(((Split) getParent()).getMinRatio(), 0.5);
 
                 }
-                moveDivider(parentNode.getRatio(), newRatio, 200);
+                ((Split)getParent()).setRatio(newRatio);
+                this.getParent().animateLayout(250);
             });
 
             btnExpand = new Button();
-            btnExpand.setUIID(expandButtonUIID);
+            btnExpand.setUIID(EXPAND_BUTTON_UIID);
             btnExpand.getAllStyles().setPadding(0,0,0,0);
             btnExpand.getAllStyles().setMargin(0,0,0,0);
             btnExpand.setIcon(getDefaultExpandIcon(isHorizontal));
-            btnExpand.addActionListener(e ->{
+            btnExpand.addActionListener(e->{
                 double newRatio;
-                if(parentNode.getRatio() < 0.5){
-                    if (parentNode.getMaxRatio() <= 0.5){
-                        newRatio = parentNode.getMaxRatio();
-                    }else{
-                        newRatio = 0.5;
-                    }
+                if(((Split)getParent()).getRatio() < 0.5){
+                    newRatio = Math.min(((Split) getParent()).getMaxRatio(), 0.5);
                 }else{
-                    newRatio = parentNode.getMaxRatio();
+                    newRatio = ((Split)getParent()).getMaxRatio();
                 }
-                moveDivider(parentNode.getRatio(), newRatio, 200);
+                ((Split)getParent()).setRatio(newRatio);
+                this.getParent().animateLayout(250);
             });
 
             dragLabel = new Label();
-            dragLabel.setUIID(dragHandleUIID);
+            dragLabel.setUIID(DRAG_HANDLE_UIID);
             dragLabel.getAllStyles().setPadding(0,0,0,0);
             dragLabel.getAllStyles().setMargin(0,0,0,0);
             dragLabel.setIcon(getDefaultDragIcon(isHorizontal));
@@ -121,6 +117,10 @@ public class MultiSplitPane extends Container{
                 add(BorderLayout.NORTH, BoxLayout.encloseY(btnCollapse, btnExpand));
             }
             setDraggable(true);
+        }
+
+        public boolean isHorizontal(){
+            return isHorizontal;
         }
 
         public void setCollapseButtonUIID(String id){
@@ -166,102 +166,50 @@ public class MultiSplitPane extends Container{
             return showDivider;
         }
 
-        //TODO see if can find more convenient way to fix the animation or remove the animation and make the transition instant.
-        private void moveDivider(double oldRatio, double newRatio, long millis){
-            final double animationStep = 0.005;
-            EasyThread.start("").run(()->{
-                if(oldRatio > newRatio){
-                    int sleepTime = (int)((double)millis / ((oldRatio - newRatio) / animationStep));
-                    if (sleepTime == 0){
-                        sleepTime = 1;
-                    }
-                    for (double ratio = oldRatio; ratio > newRatio; ratio -= animationStep){
-                        try{
-                            sleep(sleepTime);
-                        }catch (InterruptedException exception){
-
-                        }
-                        parentNode.setRatio(ratio);
-                        CN.callSerially(()->{
-                            revalidate();
-                        });
-                    }
-                    parentNode.setRatio(newRatio);
-                }else if (oldRatio < newRatio){
-                    int sleepTime = (int)((double)millis / ((newRatio - oldRatio) / animationStep));
-                    if (sleepTime == 0){
-                        sleepTime = 1;
-                    }
-                    for (double ratio = oldRatio; ratio < newRatio; ratio += animationStep){
-                        try{
-                            sleep(sleepTime);
-                        }catch (InterruptedException exception){
-
-                        }
-                        parentNode.setRatio(ratio);
-                        CN.callSerially(()-> revalidate());
-                    }
-                    parentNode.setRatio(newRatio);
-                }
-            });
-        }
-
         private Border createBorder() {
             return isHorizontal ?   Border.createCompoundBorder(Border.createBevelRaised(),
-                                                                Border.createBevelRaised(),
-                                                                Border.createEmpty(),
-                                                                Border.createEmpty()) :
-                                    Border.createCompoundBorder(Border.createEmpty(),
-                                                                Border.createEmpty(),
-                                                                Border.createBevelRaised(),
-                                                                Border.createBevelRaised());
-        }
-
-        private void setParentNode(Split parentNode){
-            this.parentNode = parentNode;
-        }
-
-        private Split getParentNode(){
-            return parentNode;
+                    Border.createBevelRaised(),
+                    Border.createEmpty(),
+                    Border.createEmpty()) :
+                    Border.createCompoundBorder(Border.createEmpty(),
+                            Border.createEmpty(),
+                            Border.createBevelRaised(),
+                            Border.createBevelRaised());
         }
 
         private void updateParentRatio(final int x, final int y){
-            Rectangle parentLimits = parentNode.getBounds();
+            Split parent = (Split)getParent();
             if(isHorizontal){
-                if (!inParentBounds(y)){
+                if (!isInParentBounds(y)){
                     return;
                 }
-                int parentHeight = parentLimits.getHeight() - this.getHeight();
+                int parentHeight = parent.getHeight() - this.getHeight();
                 double draggedRatio = ((double)y - (double)lastY) / parentHeight;
-                double newRatio = parentNode.getRatio() + draggedRatio;
-                if (newRatio > getParentNode().maxRatio){
-                    parentNode.setRatio(parentNode.getMaxRatio());
-                }else if (newRatio < parentNode.getMinRatio()){
-                    parentNode.setRatio(parentNode.getMinRatio());
-                }else{
-                    parentNode.setRatio(newRatio);
-                }
+                double newRatio = parent.getRatio() + draggedRatio;
+                if (newRatio > parent.maxRatio){
+                    parent.setRatio(((Split)getParent()).getMaxRatio());
+                }else parent.setRatio(Math.max(newRatio, ((Split) getParent()).getMinRatio()));
             }else{
-                if (!inParentBounds(x)){
+                if (!isInParentBounds(x)){
                     return;
                 }
-                int parentWidth = parentLimits.getWidth() - this.getWidth();
+                int parentWidth = parent.getWidth() - this.getWidth();
                 double draggedRatio = ((double)x - (double)lastX) / parentWidth;
-                double newRatio = parentNode.getRatio() + draggedRatio;
+                double newRatio = parent.getRatio() + draggedRatio;
                 if (newRatio > 1.0){
-                    parentNode.setRatio(1.0);
+                    parent.setRatio(1.0);
                 }else if (newRatio < 0){
-                    parentNode.setRatio(0);
+                    parent.setRatio(0);
                 }else{
-                    parentNode.setRatio(newRatio);
+                    parent.setRatio(newRatio);
                 }
             }
             lastX = x;
             lastY = y;
         }
 
-        private boolean inParentBounds(final int coordinate){
-            Rectangle parentNodeBounds = parentNode.getBounds();
+        private boolean isInParentBounds(final int coordinate){
+            Rectangle parentNodeBounds = getParent().getBounds(new Rectangle());
             if (isHorizontal){
                 int minY = getParent().getAbsoluteY();
                 int maxY = getParent().getAbsoluteY() + parentNodeBounds.getHeight();
@@ -274,7 +222,7 @@ public class MultiSplitPane extends Container{
         }
 
         private Image getDefaultCollapseIcon(boolean isHorizontal) {
-            Style s = UIManager.getInstance().getComponentStyle(collapseButtonUIID);
+            Style s = UIManager.getInstance().getComponentStyle(COLLAPSE_BUTTON_UIID);
             if (isHorizontal) {
                 return FontImage.createMaterial(FontImage.MATERIAL_KEYBOARD_ARROW_UP, s, 3);
             } else {
@@ -283,7 +231,7 @@ public class MultiSplitPane extends Container{
         }
 
         private Image getDefaultExpandIcon(boolean isHorizontal) {
-            Style s = UIManager.getInstance().getComponentStyle(expandButtonUIID);
+            Style s = UIManager.getInstance().getComponentStyle(EXPAND_BUTTON_UIID);
             if (isHorizontal) {
                 return FontImage.createMaterial(FontImage.MATERIAL_KEYBOARD_ARROW_DOWN, s, 3);
             } else {
@@ -292,7 +240,7 @@ public class MultiSplitPane extends Container{
         }
 
         private Image getDefaultDragIcon(boolean isHorizontal) {
-            Style s = UIManager.getInstance().getComponentStyle(dragHandleUIID);
+            Style s = UIManager.getInstance().getComponentStyle(DRAG_HANDLE_UIID);
             Image img = FontImage.createMaterial(FontImage.MATERIAL_DRAG_HANDLE, s, 3);
             if (isHorizontal) {
                 return img;
@@ -331,30 +279,26 @@ public class MultiSplitPane extends Container{
         }
     }
 
-    private static class MultiSplitLayout extends Layout {
-        private Node model = null;
-
-        private Node getModel() {
-            return model;
-        }
-
-        private void setModel(Node root) {
-            this.model = root;
-        }
-
-
-        private Dimension preferredComponentSize(Leaf node) {
-            Component child = node.getChildComponent();
-            return (child != null) ? child.getPreferredSize() : new Dimension(0, 0);
-        }
+    public static class MultiSplitLayout extends Layout {
 
         @Override
         public Dimension getPreferredSize(Container parent) {
-            Style parentStyle = parent.getStyle();
-            Dimension size = preferredNodeSize(getModel());
-            size.setWidth(size.getWidth() + parentStyle.getHorizontalPadding());
-            size.setHeight(size.getHeight() + parentStyle.getVerticalPadding());
-            return size;
+            Split split = (Split) parent;
+            Component leftTop = split.getLeftTopChild();
+            Component rightBottom = split.getRightBottomChild();
+            int width;
+            int height;
+            Dimension topLeftSize = leftTop.getPreferredSize();
+            Dimension rightBottomSize = rightBottom.getPreferredSize();
+
+            if (split.isHorizontal()) {
+                width = Math.max(topLeftSize.getWidth(), rightBottomSize.getWidth());
+                height = topLeftSize.getHeight() + rightBottomSize.getHeight() + split.getDivider().getHeight();
+            } else {
+                width = topLeftSize.getWidth() + rightBottomSize.getWidth() + split.getDivider().getWidth();
+                height = Math.max(topLeftSize.getHeight(), rightBottomSize.getHeight());
+            }
+            return new Dimension(width, height);
         }
 
         @Override
@@ -370,141 +314,104 @@ public class MultiSplitPane extends Container{
             int height = size.getHeight() - paddingBottom - paddingTop;
 
             Rectangle bounds = new Rectangle(paddingLeft, paddingTop, width, height);
-            layout(getModel(), bounds);
+            layout((Split)parent, bounds);
         }
 
-        private void layout(Node root, Rectangle bounds) {
-            if (root instanceof Leaf) {
-                root.setBounds(bounds);
-                Component cmp = ((Leaf) root).getChildComponent();
-                cmp.setX(bounds.getX());
-                cmp.setY(bounds.getY());
-                cmp.setSize(bounds.getSize());
+        private void layout(Split split, Rectangle bounds) {
+            if (split.isHorizontal()) {
+                Component topChild = split.getLeftTopChild();
+                Divider divider = split.getDivider();
+                Component bottomChild = split.getRightBottomChild();
+                int y = bounds.getY();
+                int x = bounds.getX();
+                Dimension totalChildrenSize = new Dimension(bounds.getWidth(), bounds.getHeight() - divider.getPreferredH());
+
+                Dimension topChildDim = new Dimension(totalChildrenSize.getWidth(), (int) (totalChildrenSize.getHeight() * split.getRatio()));
+                topChild.setSize(topChildDim);
+                topChild.setX(x);
+                topChild.setY(y);
+                y += topChildDim.getHeight();
+
+                divider.setX(x);
+                divider.setY(y);
+                divider.setSize(new Dimension(bounds.getWidth(), divider.getPreferredH()));
+                y += divider.getHeight();
+
+                Dimension bottomChildDim = new Dimension(totalChildrenSize.getWidth(), (int) (totalChildrenSize.getHeight() * (1 - split.getRatio())));
+                bottomChild.setSize(bottomChildDim);
+                bottomChild.setX(x);
+                bottomChild.setY(y);
+
+                if(topChild instanceof Split){
+                    layoutContainer((Split)topChild);
+                }
+
+                if(bottomChild instanceof Split){
+                    layoutContainer((Split)bottomChild);
+                }
             } else {
-                Split split = (Split) root;
-                split.setBounds(bounds);
-                if (split.isHorizontal()) {
-                    Node topChild = split.getLeftTopChild();
-                    Divider divider = split.getDivider();
-                    Node bottomChild = split.getRightBottomChild();
-                    int y = bounds.getY();
-                    int x= bounds.getX();
-                    Dimension totalChildrenSize = new Dimension(bounds.getWidth(), bounds.getHeight() - divider.getPreferredH());
+                Component leftChild = split.getLeftTopChild();
+                Divider divider = split.getDivider();
+                Component rightChild = split.getRightBottomChild();
+                int x = bounds.getX();
+                int y = bounds.getY();
+                Dimension totalChildrenSize = new Dimension(bounds.getWidth() - divider.getPreferredW(), bounds.getHeight());
 
-                    Dimension topChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * split.getRatio()));
-                    topChild.setBounds(new Rectangle(x, y, topChildDim));
-                    y += topChildDim.getHeight();
+                Dimension leftChildDim = new Dimension(((int) (totalChildrenSize.getWidth() * split.getRatio())), totalChildrenSize.getHeight());
+                leftChild.setSize(leftChildDim);
+                leftChild.setX(x);
+                leftChild.setY(y);
+                x += leftChildDim.getWidth();
 
-                    divider.setX(x);
-                    divider.setY(y);
-                    divider.setSize(new Dimension(bounds.getWidth(), divider.getPreferredH()));
-                    y += divider.getHeight();
+                divider.setX(x);
+                divider.setY(y);
+                divider.setSize(new Dimension(divider.getPreferredW(), bounds.getHeight()));
+                x += divider.getWidth();
 
-                    Dimension bottomChildDim = new Dimension(totalChildrenSize.getWidth(), (int)(totalChildrenSize.getHeight() * (1 - split.getRatio())));
-                    bottomChild.setBounds(new Rectangle(bounds.getX(), y, bottomChildDim));
 
-                    layout(topChild, topChild.getBounds());
-                    layout(bottomChild, bottomChild.getBounds());
-                } else {
-                    Node leftChild = split.getLeftTopChild();
-                    Divider divider = split.getDivider();
-                    Node rightChild = split.getRightBottomChild();
-                    int x = bounds.getX();
-                    int y = bounds.getY();
-                    Dimension totalChildrenSize = new Dimension(bounds.getWidth() - divider.getPreferredW(), bounds.getHeight());
+                Dimension rightChildDim = new Dimension(((int) (totalChildrenSize.getWidth() * (1 - split.getRatio()))), totalChildrenSize.getHeight());
+                rightChild.setSize(rightChildDim);
+                rightChild.setX(x);
+                rightChild.setY(y);
 
-                    Dimension leftChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * split.getRatio())), totalChildrenSize.getHeight());
-                    leftChild.setBounds(new Rectangle(x, y, leftChildDim));
-                    x += leftChildDim.getWidth();
+                if(leftChild instanceof Split){
+                    layoutContainer((Split)leftChild);
+                }
 
-                    divider.setX(x);
-                    divider.setY(y);
-                    divider.setSize(new Dimension(divider.getPreferredW(), bounds.getHeight()));
-                    x += divider.getWidth();
-
-                    Dimension bottomChildDim = new Dimension(((int)(totalChildrenSize.getWidth() * (1 - split.getRatio()))), totalChildrenSize.getHeight());
-                    rightChild.setBounds(new Rectangle(x, y, bottomChildDim));
-
-                    layout(leftChild, leftChild.getBounds());
-                    layout(rightChild, rightChild.getBounds());
+                if(rightChild instanceof Split){
+                    layoutContainer((Split)rightChild);
                 }
             }
         }
-
-        private Dimension preferredNodeSize(Node root) {
-            if (root instanceof Leaf) {
-                return preferredComponentSize((Leaf)root);
-            } else {
-                Split split = (Split) root;
-                Node leftTop = ((Split) root).getLeftTopChild();
-                Node rightBottom = ((Split) root).getRightBottomChild();
-                int width;
-                int height;
-                Dimension topLeftSize = preferredNodeSize(leftTop);
-                Dimension rightBottomSize = preferredNodeSize(rightBottom);
-
-                if (split.isHorizontal()) {
-                    width = Math.max(topLeftSize.getWidth(), rightBottomSize.getWidth());
-                    height = topLeftSize.getHeight() + rightBottomSize.getHeight() + ((Split) root).getDivider().getHeight();
-                } else {
-                    width = topLeftSize.getWidth() + rightBottomSize.getWidth() + ((Split) root).getDivider().getWidth();
-                    height = Math.max(topLeftSize.getHeight(), rightBottomSize.getHeight());
-                }
-                return new Dimension(width, height);
-            }
-        }
-
-        /**
-         * The specified Node is either the wrong type or was configured
-         * incorrectly.
-         */
-        public static class InvalidLayoutException extends RuntimeException {
-            public InvalidLayoutException (String msg) {
-                super(msg);
-            }
-        }
-
-        private void throwInvalidLayout(String msg) {
-            throw new InvalidLayoutException(msg);
-        }
     }
 
-
-    public static abstract class Node {
-        private Rectangle bounds = new Rectangle();
-
-        public Rectangle getBounds() {
-            return new Rectangle(this.bounds);
-        }
-
-        public void setBounds(Rectangle bounds) {
-            if (bounds == null) {
-                throw new IllegalArgumentException("null bounds");
-            }
-            this.bounds = new Rectangle(bounds);
-        }
-    }
-
-    public static class Split extends Node {
+    private static class Split extends Container{
         private final Divider divider;
-        private final Node leftTop;
-        private final Node rightBottom;
-        private boolean isHorizontal;
-        private double ratio = 0.5;
-        private double minRatio = 0;
-        private double maxRatio = 1;
+        private final Component leftTop;
+        private final Component rightBottom;
+        private double ratio;
+        private double minRatio;
+        private double maxRatio;
 
+        private static final double DEFAULT_RATIO = 0.5;
+        private static final double DEFAULT_MIN_RATIO = 0;
+        private static final double DEFAULT_MAX_RATIO = 1;
 
-        public Split(boolean isHorizontal, Node leftTop, Node rightBottom) {
-            this.isHorizontal = isHorizontal;
-
+        private Split(Component leftTop, Component rightBottom ,Divider div, double minRatio, double maxRatio, double ratio) {
             this.leftTop = leftTop;
             this.rightBottom = rightBottom;
-            divider = new Divider(isHorizontal);
-            divider.setParentNode(this);
+            this.minRatio = minRatio;
+            this.maxRatio = maxRatio;
+            this.ratio = ratio;
+            setUIID("MultiSplit");
+            divider = div;
+            setLayout(new MultiSplitLayout());
+            add(leftTop);
+            add(div);
+            add(rightBottom);
         }
 
-        public void setMinRatio(double minRatio){
+        private void setMinRatio(double minRatio){
             if ( ((minRatio < 0.0) || (minRatio > maxRatio))){
                 throw new IllegalArgumentException("invalid Ratio");
             }
@@ -514,11 +421,11 @@ public class MultiSplitPane extends Container{
             this.minRatio = minRatio;
         }
 
-        public double getMinRatio(){
+        private double getMinRatio(){
             return minRatio;
         }
 
-        public void setMaxRatio(double maxRatio){
+        private void setMaxRatio(double maxRatio){
             if ( ((maxRatio < minRatio) || (maxRatio > 1.0))){
                 throw new IllegalArgumentException("invalid ratio");
             }
@@ -528,54 +435,36 @@ public class MultiSplitPane extends Container{
             this.maxRatio = maxRatio;
         }
 
-        public double getMaxRatio(){
+        private double getMaxRatio(){
             return maxRatio;
         }
 
-        public double getRatio() {
+        private double getRatio() {
             return ratio;
         }
 
-        public void setRatio(double ratio) {
+        private void setRatio(double ratio) {
             if ((ratio < minRatio) || (ratio > maxRatio)) {
                 throw new IllegalArgumentException("invalid ratio");
             }
             this.ratio = ratio;
         }
 
-        public boolean isHorizontal() {
-            return isHorizontal;
+        private boolean isHorizontal() {
+            return divider.isHorizontal();
         }
 
-        public void setOrientation(boolean isHorizontal) {
-            this.isHorizontal = isHorizontal;
-        }
 
-        public Node getLeftTopChild() {
+        private Component getLeftTopChild() {
             return leftTop;
         }
 
-        public Node getRightBottomChild() {
+        private Component getRightBottomChild() {
             return rightBottom;
         }
 
-        public Divider getDivider() {
+        private Divider getDivider() {
             return divider;
-        }
-    }
-
-    public static class Leaf extends Node {
-        private final Component child;
-
-        public Leaf(Component child) {
-            if (child == null) {
-                throw new IllegalArgumentException("child of leaf cannot be null");
-            }
-            this.child = child;
-        }
-
-        public Component getChildComponent() {
-            return child;
         }
     }
 }
