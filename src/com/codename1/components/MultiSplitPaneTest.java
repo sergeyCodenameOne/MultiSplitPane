@@ -288,20 +288,17 @@ public class MultiSplitPaneTest {
         Container c2 = BoxLayout.encloseY(l4, l5, l6);
         Container c3 = BoxLayout.encloseY(l7, l8, l9);
 
-        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(false);
-        MultiSplitPane.Divider div2 = new MultiSplitPane.Divider(true);
 
-        l9.addActionListener(e->{
-            div1.showDivider(isShow);
-            isShow = !isShow;
-        });
 
-        MultiSplitPane multi = MultiSplitPane.split(c1, c2, div1).
-                split(c3, div2, true);
+//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT).
+//                split(c3, MultiSplitPane.VERTICAL_SPLIT, true);
 
-//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, div1);
-
+        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT);
         multi.setUIID("DemoCnt");
+        MultiSplitPane.Split split = multi.getRoot().setDividerUIID("DemoDivider");
+//        split.setMaxRatio(0.7);
+//        split.setMinRatio(0.1);
+
         hi.add(BorderLayout.CENTER, multi);
         return hi;
     }
