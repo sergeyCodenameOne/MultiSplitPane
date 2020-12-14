@@ -288,14 +288,13 @@ public class MultiSplitPaneTest {
         Container c2 = BoxLayout.encloseY(l4, l5, l6);
         Container c3 = BoxLayout.encloseY(l7, l8, l9);
 
+        Split multi = Split.split(c1, c2, Split.HORIZONTAL_SPLIT).
+                split(c3, Split.VERTICAL_SPLIT, false);
+//        multi.getRoot().setDividerUIID("DemoDivider");
 
-
-//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT).
-//                split(c3, MultiSplitPane.VERTICAL_SPLIT, true);
-
-        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT);
-        multi.setUIID("DemoCnt");
-        MultiSplitPane.Split split = multi.getRoot().setDividerUIID("DemoDivider");
+//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT);
+//        multi.setUIID("DemoCnt");
+//        MultiSplitPane.Split split = multi.getRoot().setDividerUIID("DemoDivider");
 //        split.setMaxRatio(0.7);
 //        split.setMinRatio(0.1);
 
