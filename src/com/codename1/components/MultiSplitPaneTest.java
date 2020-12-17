@@ -8,6 +8,8 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 
+import java.util.Arrays;
+
 import static com.codename1.ui.CN.*;
 
 /**
@@ -52,12 +54,9 @@ public class MultiSplitPaneTest {
 //        Form demoForm = twoHorizontalSplitDemo();
 //        Form demoForm = threeHorizontalSplitDemo();
 //        Form demoForm = threeVerticalSplitDemo();
-//        Form demoForm = threeVerticalAndHorizontalSplitDemo();
-        Form demoForm = playGroundDemo();
-
+        Form demoForm = threeVerticalAndHorizontalSplitDemo();
         demoForm.show();
     }
-
 
     public void stop() {
         current = getCurrentForm();
@@ -70,208 +69,81 @@ public class MultiSplitPaneTest {
     public void destroy() {
     }
 
-//    public Form twoVerticalSplitDemo(){
-//        Form hi = new Form("Hi World", new BorderLayout());
-//
-//        Label l1 = new Label("demo label 1");
-//        Label l2 = new Label("demo label 2");
-//        Label l3 = new Label("demo label 3");
-//        Label l4 = new Label("demo label 4");
-//        Label l5 = new Label("demo label 5");
-//        Label l6 = new Label("demo label 6");
-//
-//        Container c1 = BoxLayout.encloseY(l1, l2, l3);
-//        Container c2 = BoxLayout.encloseY(l4, l5, l6);
-//
-//        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(false);
-//
-//        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf("1");
-//        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf("2");
-//        MultiSplitPane.DividerNode divNode1 = new MultiSplitPane.DividerNode("div1");
-//
-//
-//        MultiSplitPane multi = new MultiSplitPane();
-//        multi.addAll(c1, c2, div1);
-//        multi.add("1", c1);
-//
-//
-//        MultiSplitPane.Split split1 = new MultiSplitPane.Split(false, leaf1, leaf2, divNode1);
-//
-//
-//        multi.setModel(split1);
-//        hi.add(BorderLayout.CENTER, multi);
-//        return hi;
-//    }
-//    public Form twoHorizontalSplitDemo(){
-//        Form hi = new Form("Hi World", new BorderLayout());
-//
-//        Label l1 = new Label("demo label 1");
-//        Label l2 = new Label("demo label 2");
-//        Label l3 = new Label("demo label 3");
-//        Label l4 = new Label("demo label 4");
-//        Label l5 = new Label("demo label 5");
-//        Label l6 = new Label("demo label 6");
-//
-//        Container c1 = BoxLayout.encloseY(l1, l2, l3);
-//        Container c2 = BoxLayout.encloseY(l4, l5, l6);
-//
-//        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(true);
-//
-//        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf("1");
-//        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf("2");
-//        MultiSplitPane.DividerNode divNode1 = new MultiSplitPane.DividerNode("div1");
-//        MultiSplitPane.Split split1 = new MultiSplitPane.Split(true, leaf1, leaf2, divNode1);
-//
-//        MultiSplitPane multi = new MultiSplitPane();
-//
-//
-//        multi.addAll(c1, c2, div1);
-//        multi.getMultiSplitLayout().addLayoutComponent("1", c1);
-//        multi.getMultiSplitLayout().addLayoutComponent("2", c2);
-//        multi.getMultiSplitLayout().addLayoutComponent("div1", div1);
-//
-//
-//        multi.setModel(split1);
-//        hi.add(BorderLayout.CENTER, multi);
-//        return hi;
-//    }
-//
-//    public Form threeHorizontalSplitDemo(){
-//        Form hi = new Form("Hi World",  new BorderLayout());
-//
-//        Label l1 = new Label("demo label 1");
-//        Label l2 = new Label("demo label 2");
-//        Label l3 = new Label("demo label 3");
-//        Label l4 = new Label("demo label 4");
-//        Label l5 = new Label("demo label 5");
-//        Label l6 = new Label("demo label 6");
-//        Label l7 = new Label("demo label 7");
-//        Label l8 = new Label("demo label 8");
-//        Label l9 = new Label("demo label 9");
-//
-//        Container c1 = BoxLayout.encloseY(l1, l2, l3);
-//        Container c2 = BoxLayout.encloseY(l4, l5, l6);
-//        Container c3 = BoxLayout.encloseY(l7, l8, l9);
-//
-//        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(true);
-//        MultiSplitPane.Divider div2 = new MultiSplitPane.Divider(true);
-//
-//        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf("1");
-//        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf("2");
-//        MultiSplitPane.Leaf leaf3 = new MultiSplitPane.Leaf("3");
-//        MultiSplitPane.DividerNode divNode1 = new MultiSplitPane.DividerNode("div1");
-//        MultiSplitPane.DividerNode divNode2 = new MultiSplitPane.DividerNode("div2");
-//
-//        MultiSplitPane multi = new MultiSplitPane();
-//        multi.addAll(c1, c2, c3, div1, div2);
-//        multi.getMultiSplitLayout().addLayoutComponent("1", c1);
-//        multi.getMultiSplitLayout().addLayoutComponent("2", c2);
-//        multi.getMultiSplitLayout().addLayoutComponent("3", c3);
-//        multi.getMultiSplitLayout().addLayoutComponent("div1", div1);
-//        multi.getMultiSplitLayout().addLayoutComponent("div2", div2);
-//
-//        MultiSplitPane.Split split1 = new MultiSplitPane.Split(true, leaf1, leaf2, divNode1);
-//        MultiSplitPane.Split split2 = new MultiSplitPane.Split(true, split1, leaf3, divNode2);
-//
-//        multi.setModel(split2);
-//        hi.add(BorderLayout.CENTER, multi);
-//        return hi;
-//    }
-//    public Form threeVerticalSplitDemo(){
-//        Form hi = new Form("Hi World", new BorderLayout());
-//
-//        Label l1 = new Label("demo label 1");
-//        Label l2 = new Label("demo label 2");
-//        Label l3 = new Label("demo label 3");
-//        Label l4 = new Label("demo label 4");
-//        Label l5 = new Label("demo label 5");
-//        Label l6 = new Label("demo label 6");
-//        Label l7 = new Label("demo label 7");
-//        Label l8 = new Label("demo label 8");
-//        Label l9 = new Label("demo label 9");
-//
-//        Container c1 = BoxLayout.encloseY(l1, l2, l3);
-//        Container c2 = BoxLayout.encloseY(l4, l5, l6);
-//        Container c3 = BoxLayout.encloseY(l7, l8, l9);
-//
-//        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(false);
-//        MultiSplitPane.Divider div2 = new MultiSplitPane.Divider(false);
-//
-//        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf("1");
-//        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf("2");
-//        MultiSplitPane.Leaf leaf3 = new MultiSplitPane.Leaf("3");
-//        MultiSplitPane.DividerNode divNode1 = new MultiSplitPane.DividerNode("div1");
-//        MultiSplitPane.DividerNode divNode2 = new MultiSplitPane.DividerNode("div2");
-//
-//        MultiSplitPane multi = new MultiSplitPane();
-//        multi.addAll(c1, c2, c3, div1, div2);
-//        multi.getMultiSplitLayout().addLayoutComponent("1", c1);
-//        multi.getMultiSplitLayout().addLayoutComponent("2", c2);
-//        multi.getMultiSplitLayout().addLayoutComponent("3", c3);
-//        multi.getMultiSplitLayout().addLayoutComponent("div1", div1);
-//        multi.getMultiSplitLayout().addLayoutComponent("div2", div2);
-//
-//        MultiSplitPane.Split split1 = new MultiSplitPane.Split(false, leaf1, leaf2, divNode1);
-//        MultiSplitPane.Split split2 = new MultiSplitPane.Split(false, split1, leaf3, divNode2);
-//
-//        multi.setModel(split2);
-//        hi.add(BorderLayout.CENTER, multi);
-//        return hi;
-//    }
-//    public Form threeVerticalAndHorizontalSplitDemo(){
-//        Form hi = new Form("Hi World", new BorderLayout());
-//
-//        Label l1 = new Label("demo label 1");
-//        Label l2 = new Label("demo label 2");
-//        Label l3 = new Label("demo label 3");
-//        Label l4 = new Label("demo label 4");
-//        Label l5 = new Label("demo label 5");
-//        Label l6 = new Label("demo label 6");
-//        Label l7 = new Label("demo label 7");
-//        Label l8 = new Label("demo label 8");
-//        Label l9 = new Label("demo label 9");
-//
-//        Container c1 = BoxLayout.encloseY(l1, l2, l3);
-//        Container c2 = BoxLayout.encloseY(l4, l5, l6);
-//        Container c3 = BoxLayout.encloseY(l7, l8, l9);
-//
-//        // Can be removed
-//        MultiSplitPane.Divider div1 = new MultiSplitPane.Divider(true);
-//        MultiSplitPane.Divider div2 = new MultiSplitPane.Divider(false);
-//
-//        MultiSplitPane.Leaf leaf1 = new MultiSplitPane.Leaf("1");
-//        MultiSplitPane.Leaf leaf2 = new MultiSplitPane.Leaf("2");
-//        MultiSplitPane.Leaf leaf3 = new MultiSplitPane.Leaf("3");
-//
-//
-//        // Can be removed
-//        MultiSplitPane.DividerNode divNode1 = new MultiSplitPane.DividerNode("div1");
-//        MultiSplitPane.DividerNode divNode2 = new MultiSplitPane.DividerNode("div2");
-//
-//        MultiSplitPane multi = new MultiSplitPane();
-//        multi.addAll(c1, c2, c3, div1, div2);
-//        multi.getMultiSplitLayout().addLayoutComponent("1", c1);
-//        multi.getMultiSplitLayout().addLayoutComponent("2", c2);
-//        multi.getMultiSplitLayout().addLayoutComponent("3", c3);
-//        multi.getMultiSplitLayout().addLayoutComponent("div1", div1);
-//        multi.getMultiSplitLayout().addLayoutComponent("div2", div2);
-//
-//        MultiSplitPane.Split split1 = new MultiSplitPane.Split(true, leaf1, leaf2, divNode1);
-//        MultiSplitPane.Split split2 = new MultiSplitPane.Split(false, split1, leaf3, divNode2);
-//        split1.setMaxRatio(0.7);
-//        split1.setMinRatio(0.3);
-//        div2.setDragIcon(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("DemoDragIcon")));
-//        div2.setDragLabelUIID("DemoDragIcon");
-//        div2.setUIID("DemoDiv");
-//
-//
-//
-//        multi.setModel(split2);
-//        hi.add(BorderLayout.CENTER, multi);
-//        return hi;
-//    }
+    public Form twoVerticalSplitDemo(){
+        Form hi = new Form("Hi World", new BorderLayout());
 
-    public Form playGroundDemo(){
+        Label l1 = new Label("demo label 1");
+        Label l2 = new Label("demo label 2");
+        Label l3 = new Label("demo label 3");
+        Label l4 = new Label("demo label 4");
+        Label l5 = new Label("demo label 5");
+        Label l6 = new Label("demo label 6");
+
+        Container c1 = BoxLayout.encloseY(l1, l2, l3);
+        Container c2 = BoxLayout.encloseY(l4, l5, l6);
+
+        Container div1 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div1.setUIID("DemoDivider");
+        div1.setIgnorePointerEvents(true);
+        div1.add(BorderLayout.CENTER, new Label(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
+
+        MultiSplitLayout.Node[] nodes = {
+                new MultiSplitLayout.Leaf("leaf 1"),
+                new MultiSplitLayout.Divider("div 1"),
+                new MultiSplitLayout.Leaf("leaf 2")};
+
+        MultiSplitLayout.Split model = new MultiSplitLayout.Split();
+        model.setRowLayout(false);
+        model.setChildren(Arrays.asList(nodes));
+
+        MultiSplitPane splitPane = new MultiSplitPane(model);
+        splitPane.addComponent("leaf 1", c1);
+        splitPane.addComponent("leaf 2", c2);
+        splitPane.addComponent("div 1", div1);
+        hi.add(BorderLayout.CENTER, splitPane);
+
+        return hi;
+    }
+
+    public Form twoHorizontalSplitDemo(){
+        Form hi = new Form("Hi World", new BorderLayout());
+
+        Label l1 = new Label("demo label 1");
+        Label l2 = new Label("demo label 2");
+        Label l3 = new Label("demo label 3");
+        Label l4 = new Label("demo label 4");
+        Label l5 = new Label("demo label 5");
+        Label l6 = new Label("demo label 6");
+        Label l7 = new Label("demo label 7");
+        Label l8 = new Label("demo label 8");
+        Button l9 = new Button("demo button show");
+
+        Container c1 = BoxLayout.encloseY(l1, l2, l3);
+        Container c2 = BoxLayout.encloseY(l4, l5, l6);
+
+        Container div1 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div1.add(BorderLayout.CENTER, new Label(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
+        div1.setIgnorePointerEvents(true);
+        div1.setUIID("DemoDivider");
+
+        MultiSplitLayout.Node[] nodes = {
+                new MultiSplitLayout.Leaf("leaf 1"),
+                new MultiSplitLayout.Divider("div 1"),
+                new MultiSplitLayout.Leaf("leaf 2")};
+
+        MultiSplitLayout.Split model = new MultiSplitLayout.Split();
+        model.setChildren(Arrays.asList(nodes.clone()));
+
+        MultiSplitPane splitPane = new MultiSplitPane(model);
+        splitPane.addComponent("leaf 1", c1);
+        splitPane.addComponent("leaf 2", c2);
+        splitPane.addComponent("div 1", div1);
+        hi.add(BorderLayout.CENTER, splitPane);
+
+        return hi;
+    }
+
+    public Form threeHorizontalSplitDemo(){
         Form hi = new Form("Hi World", new BorderLayout());
 
         Label l1 = new Label("demo label 1");
@@ -288,17 +160,141 @@ public class MultiSplitPaneTest {
         Container c2 = BoxLayout.encloseY(l4, l5, l6);
         Container c3 = BoxLayout.encloseY(l7, l8, l9);
 
-        Split multi = Split.split(c1, c2, Split.HORIZONTAL_SPLIT).
-                split(c3, Split.VERTICAL_SPLIT, false);
-//        multi.getRoot().setDividerUIID("DemoDivider");
+        Container div1 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div1.add(BorderLayout.CENTER, new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
 
-//        MultiSplitPane multi = MultiSplitPane.split(c1, c2, MultiSplitPane.HORIZONTAL_SPLIT);
-//        multi.setUIID("DemoCnt");
-//        MultiSplitPane.Split split = multi.getRoot().setDividerUIID("DemoDivider");
-//        split.setMaxRatio(0.7);
-//        split.setMinRatio(0.1);
+        Container div2 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div2.add(BorderLayout.CENTER, new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
 
-        hi.add(BorderLayout.CENTER, multi);
+        div1.setIgnorePointerEvents(true);
+        div2.setIgnorePointerEvents(true);
+
+        MultiSplitLayout.Node[] nodes = {
+                new MultiSplitLayout.Leaf("leaf 1"),
+                new MultiSplitLayout.Divider("div 1"),
+                new MultiSplitLayout.Leaf("leaf 2"),
+                new MultiSplitLayout.Divider("div 2"),
+                new MultiSplitLayout.Leaf("leaf 3"),
+        };
+
+        MultiSplitLayout.Split model = new MultiSplitLayout.Split();
+        model.setChildren(Arrays.asList(nodes));
+
+        MultiSplitPane splitPane = new MultiSplitPane(model);
+        splitPane.addComponent("leaf 1", c1);
+        splitPane.addComponent("leaf 2", c2);
+        splitPane.addComponent("leaf 3", c3);
+        splitPane.addComponent("div 1", div1);
+        splitPane.addComponent("div 2", div2);
+        hi.add(BorderLayout.CENTER, splitPane);
+
+        return hi;
+    }
+    public Form threeVerticalSplitDemo(){
+        Form hi = new Form("Hi World", new BorderLayout());
+
+        Label l1 = new Label("demo label 1");
+        Label l2 = new Label("demo label 2");
+        Label l3 = new Label("demo label 3");
+        Label l4 = new Label("demo label 4");
+        Label l5 = new Label("demo label 5");
+        Label l6 = new Label("demo label 6");
+        Label l7 = new Label("demo label 7");
+        Label l8 = new Label("demo label 8");
+        Button l9 = new Button("demo button show");
+
+        Container c1 = BoxLayout.encloseY(l1, l2, l3);
+        Container c2 = BoxLayout.encloseY(l4, l5, l6);
+        Container c3 = BoxLayout.encloseY(l7, l8, l9);
+
+        Container div1 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        Button button = new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("Label"), 2));
+        div1.add(BorderLayout.CENTER, button);
+
+        Container div2 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div2.add(BorderLayout.CENTER, new Label(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
+
+        div1.setIgnorePointerEvents(true);
+        div1.setUIID("DemoDivider");
+        div2.setIgnorePointerEvents(true);
+        div2.setUIID("DemoDivider");
+
+
+        MultiSplitLayout.Node[] nodes = {
+                new MultiSplitLayout.Leaf("leaf 1"),
+                new MultiSplitLayout.Divider("div 1"),
+                new MultiSplitLayout.Leaf("leaf 2"),
+                new MultiSplitLayout.Divider("div 2"),
+                new MultiSplitLayout.Leaf("leaf 3"),
+        };
+
+        MultiSplitLayout.Split model = new MultiSplitLayout.Split();
+        model.setRowLayout(false);
+        model.setChildren(Arrays.asList(nodes));
+
+        MultiSplitPane splitPane = new MultiSplitPane(model);
+        splitPane.addComponent("leaf 1", c1);
+        splitPane.addComponent("leaf 2", c2);
+        splitPane.addComponent("leaf 3", c3);
+        splitPane.addComponent("div 1", div1);
+        splitPane.addComponent("div 2", div2);
+        hi.add(BorderLayout.CENTER, splitPane);
+
+        return hi;
+    }
+
+    public Form threeVerticalAndHorizontalSplitDemo() {
+        Form hi = new Form("Hi World", new BorderLayout());
+
+        Label l1 = new Label("demo label 1");
+        Label l2 = new Label("demo label 2");
+        Label l3 = new Label("demo label 3");
+        Label l4 = new Label("demo label 4");
+        Label l5 = new Label("demo label 5");
+        Label l6 = new Label("demo label 6");
+        Label l7 = new Label("demo label 7");
+        Label l8 = new Label("demo label 8");
+        Button l9 = new Button("demo button show");
+
+        Container c1 = BoxLayout.encloseY(l1, l2, l3);
+        Container c2 = BoxLayout.encloseY(l4, l5, l6);
+        Container c3 = BoxLayout.encloseY(l7, l8, l9);
+
+        Container div1 = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        div1.add(BorderLayout.CENTER, new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
+        div1.setIgnorePointerEvents(true);
+        div1.setUIID("DemoDivider");
+
+        Button div2 = new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2));
+        div2.setIgnorePointerEvents(true);
+        div2.setUIID("DemoDivider");
+
+        MultiSplitLayout.Node[] nodes1 = {
+                new MultiSplitLayout.Leaf("leaf 1"),
+                new MultiSplitLayout.Divider("div 1"),
+                new MultiSplitLayout.Leaf("leaf 2")};
+
+        MultiSplitLayout.Split split = new MultiSplitLayout.Split();
+        split.setChildren(Arrays.asList(nodes1));
+
+        MultiSplitLayout.Node[] nodes2 = {
+                new MultiSplitLayout.Leaf("leaf 3"),
+                new MultiSplitLayout.Divider("div 2"),
+                split};
+
+        MultiSplitLayout.Split model = new MultiSplitLayout.Split();
+        model.setChildren(Arrays.asList(nodes2));
+        split.setRowLayout(false);
+
+        MultiSplitPane splitPane = new MultiSplitPane(model);
+        splitPane.addComponent("leaf 1", c1);
+        splitPane.addComponent("leaf 2", c2);
+        splitPane.addComponent("leaf 3", c3);
+        splitPane.addComponent("div 1", div1);
+        splitPane.addComponent("div 2", div2);
+
+        hi.add(BorderLayout.CENTER, splitPane);
+
         return hi;
     }
 }
