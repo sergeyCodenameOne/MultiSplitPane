@@ -83,11 +83,11 @@ public class MultiSplitLayout extends Layout {
         int width = size.getWidth() - parentStyle.getHorizontalPadding();
         int height = size.getHeight() - parentStyle.getVerticalPadding();
         Rectangle bounds = new Rectangle(parentStyle.getPaddingLeft(parent.isRTL()), parentStyle.getPaddingTop(), width, height);
-        layoutNodesBounds(root, bounds, false, 0);
+        layoutNodesBounds(root, bounds);
         setComponentsBounds(root, bounds);
     }
 
-    private void layoutNodesBounds(MultiSplitPane.Node root, Rectangle bounds, boolean allocateExtraSpace, int extraSpace) {
+    private void layoutNodesBounds(MultiSplitPane.Node root, Rectangle bounds) {
         if (root instanceof MultiSplitPane.Leaf) {
             root.setBounds(bounds);
         }
@@ -95,17 +95,21 @@ public class MultiSplitLayout extends Layout {
             MultiSplitPane.Split split = (MultiSplitPane.Split)root;
             Iterator<MultiSplitPane.Node> splitChildren = split.getChildren().iterator();
             Rectangle childBounds;
-
+            double totalWeight = 0.0;
             if (split.isRowSplit()) {
                 int x = bounds.getX();
+                int extraSpace = bounds.getWidth() - split.getPreferredSize().getWidth();
                 while(splitChildren.hasNext()) {
                     MultiSplitPane.Node splitChild = splitChildren.next();
                     MultiSplitPane.Divider dividerChild = splitChildren.hasNext() ? (MultiSplitPane.Divider)(splitChildren.next()) : null;
                     double childWidth;
                     if (!isFloatingDividers()) {
                         childWidth = splitChild.getPreferredSize().getWidth();
-                        if(extraSpace != 0){
+                        if(dividerChild != null){
                             childWidth += extraSpace * splitChild.getWeight();
+                            totalWeight += splitChild.getWeight();
+                        }else{
+                            childWidth += extraSpace * (1 - totalWeight);
                         }
                     }else{
                         if (dividerChild != null) {
@@ -113,14 +117,10 @@ public class MultiSplitLayout extends Layout {
                         }
                         else {
                             childWidth = split.getBounds().getX() + split.getBounds().getWidth() - x;
-                            int childPreferredWidth = splitChild.getPreferredSize().getWidth();
-                            if (childWidth > childPreferredWidth){
-                                childWidth = childPreferredWidth;
-                            }
                         }
                     }
                     childBounds = new Rectangle(x, bounds.getY(), (int)childWidth, bounds.getHeight());
-                    layoutNodesBounds(splitChild, childBounds, false, 0);
+                    layoutNodesBounds(splitChild, childBounds);
 
                     if (!isFloatingDividers() && (dividerChild != null)) {
                         double dividerX = childBounds.getX() + childBounds.getWidth();
@@ -138,9 +138,10 @@ public class MultiSplitLayout extends Layout {
                         x = splitChild.getBounds().getX() + splitChild.getBounds().getWidth();
                     }
                 }
-                extraSpace = bounds.getWidth() - x;
             } else {
                 int y = bounds.getY();
+                int extraSpace = bounds.getHeight() - split.getPreferredSize().getHeight();
+
                 while(splitChildren.hasNext()) {
                     MultiSplitPane.Node splitChild = splitChildren.next();
                     MultiSplitPane.Divider dividerChild =
@@ -148,8 +149,11 @@ public class MultiSplitLayout extends Layout {
                     int childHeight;
                     if (!isFloatingDividers()) {
                         childHeight = splitChild.getPreferredSize().getHeight();
-                        if (extraSpace != 0){
+                        if(dividerChild != null){
                             childHeight += extraSpace * splitChild.getWeight();
+                            totalWeight += splitChild.getWeight();
+                        }else{
+                            childHeight += extraSpace * (1 - totalWeight);
                         }
                     }else{
                         if (dividerChild != null) {
@@ -157,14 +161,10 @@ public class MultiSplitLayout extends Layout {
                         }
                         else {
                             childHeight = split.getBounds().getY() + split.getBounds().getHeight() - y;
-                            int childPreferredHeight = splitChild.getPreferredSize().getHeight();
-                            if (childHeight > childPreferredHeight){
-                                childHeight = childPreferredHeight;
-                            }
                         }
                     }
                     childBounds = new Rectangle(bounds.getX(), y, bounds.getWidth(), childHeight);
-                    layoutNodesBounds(splitChild, childBounds, false, 0);
+                    layoutNodesBounds(splitChild, childBounds);
 
                     if (!isFloatingDividers() && (dividerChild != null)) {
                         int dividerY = childBounds.getY() + childBounds.getHeight();
@@ -181,12 +181,8 @@ public class MultiSplitLayout extends Layout {
                         y = splitChild.getBounds().getY() + splitChild.getBounds().getHeight();
                     }
                 }
-                extraSpace = bounds.getHeight() - y;
             }
             split.setBounds(bounds);
-            if (extraSpace != 0 && !allocateExtraSpace){
-                layoutNodesBounds(root, bounds, true, extraSpace);
-            }
         }
     }
 

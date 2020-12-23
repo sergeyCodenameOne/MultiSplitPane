@@ -52,8 +52,8 @@ public class MultiSplitPaneTest {
 //        Form demoForm = twoHorizontalSplitDemo();
 //        Form demoForm = threeHorizontalSplitDemo();
 //        Form demoForm = threeVerticalSplitDemo();
-        Form demoForm = threeVerticalAndHorizontalSplitDemo();
-//        Form demoForm = playGround();
+//        Form demoForm = threeVerticalAndHorizontalSplitDemo();
+        Form demoForm = playGround();
 
         demoForm.show();
     }
@@ -247,19 +247,17 @@ public class MultiSplitPaneTest {
             isShow = !isShow;
         });
 
-        MultiSplitPane.Split split = new MultiSplitPane.Split(false,
+        MultiSplitPane.Split split = new MultiSplitPane.Split(true,
                 new MultiSplitPane.Leaf(c1),
                 new MultiSplitPane.Divider(div1),
                 new MultiSplitPane.Leaf(c2)
         );
 
-        MultiSplitPane.Split model = new MultiSplitPane.Split(true,
-                new MultiSplitPane.Leaf(c3),
+        MultiSplitPane.Split model = new MultiSplitPane.Split(false,
+                split,
                 new MultiSplitPane.Divider(div2),
-                split
+                new MultiSplitPane.Leaf(c3)
         );
-
-
 
         MultiSplitPane splitPane = new MultiSplitPane(model).build();
 
@@ -292,10 +290,10 @@ public class MultiSplitPaneTest {
         div2.add(BorderLayout.CENTER, new Button(FontImage.createMaterial(FontImage.MATERIAL_AIRPLANEMODE_ON, UIManager.getInstance().getComponentStyle("label"), 2)));
         div2.setUIID("DemoDivider");
 
-        MultiSplitPane.Split split = new MultiSplitPane.Split(true,
-                new MultiSplitPane.Leaf(c1).setWeight(0),
+        MultiSplitPane.Split split = new MultiSplitPane.Split(false,
+                new MultiSplitPane.Leaf(c1).setWeight(0.1),
                 new MultiSplitPane.Divider(div1),
-                new MultiSplitPane.Leaf(c2).setWeight(0),
+                new MultiSplitPane.Leaf(c2).setWeight(0.1),
                 new MultiSplitPane.Divider(div2),
                 new MultiSplitPane.Leaf(c3).setWeight(0)
         );
