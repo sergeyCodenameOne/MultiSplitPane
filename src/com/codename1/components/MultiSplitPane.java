@@ -517,6 +517,11 @@ public class MultiSplitPane extends Container {
                         throw new InvalidModelException("Expected Divider", root);
                     }
                 }
+                if(child instanceof Split){
+                    if(((Split) child).isRowSplit() == ((Split) root).isRowSplit()){
+                        throw new InvalidModelException("Child can't be the same orientation as the parent.", root);
+                    }
+                }
                 totalWeight += child.getWeight();
             }
 
